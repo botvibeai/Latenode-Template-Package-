@@ -1,0 +1,6 @@
+{
+  "name": "BotVibe AI - Latenode Template Architect",
+  "description": "Standardized Latenode.com template builder, test harness generator, sticky-note canvas architect, and complete marketplace submission packager for BotVibe AI.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
