@@ -250,7 +250,7 @@ export const MarketplacePackage: React.FC<MarketplacePackageProps> = ({ pkg }) =
               </div>
 
               <div className="flex flex-wrap gap-1.5 pt-2">
-                {pkg.marketplaceListing.tags.map((t, idx) => (
+                {(pkg.marketplaceListing?.tags || []).map((t, idx) => (
                   <span key={idx} className="text-[10px] bg-slate-900 text-slate-400 px-2 py-0.5 rounded border border-slate-800 font-mono">
                     #{t}
                   </span>
@@ -294,7 +294,7 @@ export const MarketplacePackage: React.FC<MarketplacePackageProps> = ({ pkg }) =
                 Target Buyers & Value Proposition
               </h3>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                {pkg.marketplaceListing.targetBuyers.map((b, i) => (
+                {(pkg.marketplaceListing?.targetBuyers || []).map((b, i) => (
                   <div key={i} className="p-2.5 rounded-lg bg-slate-950 border border-slate-800 text-xs text-slate-300 flex items-center gap-2">
                     <span className="w-1.5 h-1.5 rounded-full bg-amber-400" />
                     <span>{b}</span>
@@ -308,7 +308,7 @@ export const MarketplacePackage: React.FC<MarketplacePackageProps> = ({ pkg }) =
                 Key Features Highlighted in Listing
               </h3>
               <ul className="space-y-2 text-xs text-slate-300">
-                {pkg.marketplaceListing.keyFeatures.map((f, i) => (
+                {(pkg.marketplaceListing?.keyFeatures || []).map((f, i) => (
                   <li key={i} className="p-2.5 rounded-lg bg-slate-950 border border-slate-800 flex items-start gap-2.5">
                     <CheckCircle2 className="w-4 h-4 text-emerald-400 flex-shrink-0 mt-0.5" />
                     <span>{f}</span>
@@ -322,7 +322,7 @@ export const MarketplacePackage: React.FC<MarketplacePackageProps> = ({ pkg }) =
                 Buyer Prerequisites
               </h3>
               <ul className="space-y-1.5 text-xs text-slate-400 font-mono">
-                {pkg.marketplaceListing.prerequisites.map((p, i) => (
+                {(pkg.marketplaceListing?.prerequisites || []).map((p, i) => (
                   <li key={i} className="flex items-center gap-2">
                     <span className="text-amber-400">•</span>
                     <span>{p}</span>

@@ -67,11 +67,11 @@ ${aiEngineBadge}
 **${templateName}** is an enterprise-grade, pre-built automation scenario engineered for deployment on **Latenode.com**. Designed according to the **BotVibe AI Golden Standards**, this package eliminates technical debt, prevents crashes via universal error handling, and standardizes credentials using isolated global variables.
 
 - **Marketplace Category**: ${marketplaceListing.category}
-- **Recommended Retail Price**: $${marketplaceListing.recommendedPriceUSD} USD
-- **Setup & Onboarding Time**: ~${marketplaceListing.setupTimeMinutes} Minutes
-- **Core Problem Solved**: ${researchSummary.coreProblemSolved}
-- **Market Opportunity**: ${researchSummary.marketOpportunity}
-- **Target Buyers**: ${marketplaceListing.targetBuyers.join(', ')}
+- **Recommended Retail Price**: $${marketplaceListing?.recommendedPriceUSD ?? 499} USD
+- **Setup & Onboarding Time**: ~${marketplaceListing?.setupTimeMinutes ?? 7} Minutes
+- **Core Problem Solved**: ${researchSummary?.coreProblemSolved || 'Automates complex multi-step pipelines on Latenode.'}
+- **Market Opportunity**: ${researchSummary?.marketOpportunity || 'High value enterprise automation demand.'}
+- **Target Buyers**: ${(marketplaceListing?.targetBuyers || []).join(', ')}
 ${searchGroundingSection}
 
 ---
@@ -82,20 +82,20 @@ This automation scenario consists of **${totalNodes} interconnected nodes** mapp
 
 | # | Node Name | Type | Canvas Placement | Sticky Note / Description Summary |
 |---|-----------|------|------------------|-----------------------------------|
-${nodes.map((node, i) => `| ${i + 1} | \`${node.name}\` | **${node.type.replace('_', ' ').toUpperCase()}** | X:${node.position.x}, Y:${node.position.y} | ${node.stickyNote.title}: ${node.stickyNote.instructions.replace(/\n/g, ' ')} |`).join('\n')}
+${(nodes || []).map((node, i) => `| ${i + 1} | \`${node.name}\` | **${(node.type || 'javascript').replace('_', ' ').toUpperCase()}** | X:${node.position?.x ?? 100}, Y:${node.position?.y ?? 200} | ${node.stickyNote?.title || node.name}: ${(node.stickyNote?.instructions || '').replace(/\n/g, ' ')} |`).join('\n')}
 
 ### Detailed Node Specifications & Sticky Notes
 
-${nodes.map((node, i) => `#### ${i + 1}. \`${node.name}\` — ${node.title}
+${(nodes || []).map((node, i) => `#### ${i + 1}. \`${node.name}\` — ${node.title}
 - **Node Type**: \`${node.type}\`
-- **Canvas Coordinates**: (X: \`${node.position.x}\`, Y: \`${node.position.y}\`)
-- **Sticky Note Badge**: \`${node.stickyNote.title}\` (Color: *${node.stickyNote.color}*)
+- **Canvas Coordinates**: (X: \`${node.position?.x ?? 100}\`, Y: \`${node.position?.y ?? 200}\`)
+- **Sticky Note Badge**: \`${node.stickyNote?.title || `STEP ${i + 1}`}\` (Color: *${node.stickyNote?.color || 'blue'}*)
 - **Node Description & Instructions**:
-  > ${node.stickyNote.instructions}
-- **Required Credentials**: ${node.stickyNote.requiredCredentials.length > 0 ? node.stickyNote.requiredCredentials.map(c => `\`${c}\``).join(', ') : '*None (Internal logic)*'}
-- **Input Contract**: \`${node.stickyNote.inputSchemaNotes}\`
-- **Output Contract**: \`${node.stickyNote.outputContract}\`
-- **Verification Rule**: \`${node.stickyNote.testRule}\`
+  > ${node.stickyNote?.instructions || ''}
+- **Required Credentials**: ${(node.stickyNote?.requiredCredentials && node.stickyNote.requiredCredentials.length > 0) ? node.stickyNote.requiredCredentials.map(c => `\`${c}\``).join(', ') : '*None (Internal logic)*'}
+- **Input Contract**: \`${node.stickyNote?.inputSchemaNotes || '$node.in parameters'}\`
+- **Output Contract**: \`${node.stickyNote?.outputContract || '{ success: true }'}\`
+- **Verification Rule**: \`${node.stickyNote?.testRule || 'Confirm assertion'}\`
 ${node.codeSnippet ? `
 \`\`\`javascript
 // Node Runtime Script (Node.js 20 ES Module)
@@ -111,33 +111,33 @@ ${node.codeSnippet.trim()}
 
 This section details the sequential build pipeline used by **OpenAI Codex** and autonomous **Antigravity Agents** to assemble and verify this workflow node-by-node.
 
-${buildSteps.map(step => `### Step ${step.stepNumber}: ${step.title}
+${(buildSteps || []).map(step => `### Step ${step.stepNumber}: ${step.title}
 
 - **Target Node**: \`${step.nodeName}\` (\`${step.nodeType}\`)
 - **Step Purpose**: ${step.purpose}
 - **Canvas Sticky Note**:
-  - *Badge*: \`${step.stickyNoteContent.badgeText}\`
-  - *Instruction*: ${step.stickyNoteContent.instructions}
-  - *Buyer Action*: ${step.stickyNoteContent.buyerAction}
+  - *Badge*: \`${step.stickyNoteContent?.badgeText || `STEP ${step.stepNumber}`}\`
+  - *Instruction*: ${step.stickyNoteContent?.instructions || step.purpose}
+  - *Buyer Action*: ${step.stickyNoteContent?.buyerAction || 'Configure in Latenode'}
 
 #### Click-by-Click Configuration:
-${step.configurationGuide.map((item, idx) => `${idx + 1}. ${item}`).join('\n')}
+${(step.configurationGuide || []).map((item, idx) => `${idx + 1}. ${item}`).join('\n')}
 
 #### Unit Testing & Verification Assertion:
 - **Expected Assertion**: \`${step.expectedAssertion}\`
 - **Mock Input Payload ($node.in)**:
 \`\`\`json
-${JSON.stringify(step.testPayload, null, 2)}
+${JSON.stringify(step.testPayload || {}, null, 2)}
 \`\`\`
 
 #### Codex Build Prompt:
 \`\`\`text
-${step.codexPrompt.trim()}
+${(step.codexPrompt || '').trim()}
 \`\`\`
 
 #### Antigravity Autonomous Agent Directive:
 \`\`\`text
-${step.antigravityPrompt.trim()}
+${(step.antigravityPrompt || '').trim()}
 \`\`\`
 
 ---

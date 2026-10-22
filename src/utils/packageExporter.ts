@@ -15,29 +15,30 @@ export async function generateSubmissionZip(pkg: BotVibeTemplatePackage): Promis
   zip.file(`${pkg.slug}.latenode.json`, JSON.stringify(pkg.latenodeScenarioJson, null, 2));
 
   // 2. Marketplace Listing Copy
-  const listingMd = `# ${pkg.marketplaceListing.title}
+  const listing = pkg.marketplaceListing || {} as any;
+  const listingMd = `# ${listing.title || pkg.templateName}
 **Vendor**: ${pkg.companyName} | **Version**: ${pkg.version}
-**Category**: ${pkg.marketplaceListing.category}
-**Suggested Retail Price**: $${pkg.marketplaceListing.recommendedPriceUSD} USD
-**Setup Time**: <${pkg.marketplaceListing.setupTimeMinutes} Minutes
+**Category**: ${listing.category || 'General Automation'}
+**Suggested Retail Price**: $${listing.recommendedPriceUSD ?? 499} USD
+**Setup Time**: <${listing.setupTimeMinutes ?? 7} Minutes
 
 ## Short Tagline
-${pkg.marketplaceListing.shortTagline}
+${listing.shortTagline || ''}
 
 ## Marketplace Description
-${pkg.marketplaceListing.fullMarkdownDescription}
+${listing.fullMarkdownDescription || ''}
 
 ## Target Buyers
-${pkg.marketplaceListing.targetBuyers.map(b => `- ${b}`).join('\n')}
+${(listing.targetBuyers || []).map((b: string) => `- ${b}`).join('\n')}
 
 ## Prerequisites
-${pkg.marketplaceListing.prerequisites.map(p => `- ${p}`).join('\n')}
+${(listing.prerequisites || []).map((p: string) => `- ${p}`).join('\n')}
 
 ## Key Features
-${pkg.marketplaceListing.keyFeatures.map(f => `- ${f}`).join('\n')}
+${(listing.keyFeatures || []).map((f: string) => `- ${f}`).join('\n')}
 
 ## Marketplace Search Tags
-${pkg.marketplaceListing.tags.join(', ')}
+${(listing.tags || []).join(', ')}
 `;
   zip.file('01_MARKETPLACE_LISTING.md', listingMd);
 

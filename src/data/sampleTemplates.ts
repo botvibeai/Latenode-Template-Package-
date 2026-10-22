@@ -1,6 +1,59 @@
 import { BotVibeTemplatePackage } from '../types';
+import { TEMPLATE_AUTONOMOUS_PRICE_SCRAPER } from './prebuiltTemplates';
+
+export { TEMPLATE_AUTONOMOUS_PRICE_SCRAPER };
 
 export const SAMPLE_RESEARCH_REPORTS = [
+    id: 'report-autonomous-price-scraper',
+    title: 'Autonomous Multi-Source Web Scraper & Dynamic Price Intelligence Engine (Template #1)',
+    category: 'E-commerce & Dynamic Pricing',
+    estimatedValue: '$499 / sale',
+    description:
+      'Enterprise price intelligence & scraping pipeline on Latenode. Eliminates Zapier task penalties and $100+/mo Apify fees. Features native Puppeteer Chromium, custom JS DOM parsing, queryable datastore for time-series pricing deltas, and instant Slack/Email anomaly alerts.',
+    sampleRawReport: `Technical & Strategic Build Blueprint: Autonomous Multi-Source Web Scraper & Dynamic Price Intelligence Engine (Template #1)
+
+1. Market Context & Platform Arbitrage Analysis
+
+Context & Strategic Importance
+The cloud workflow automation market has reached a structural turning point. Legacy automation platforms are experiencing widespread enterprise churn due to restrictive task-based billing architectures and severe technical constraints that inhibit enterprise scaling. Modern dynamic web extraction and price intelligence pipelines require complex multi-step execution: client-side Single Page Application (SPA) rendering, dynamic Document Object Model (DOM) parsing, resilience against anti-bot challenges, and structured data formatting—frequently utilizing Large Language Models (LLMs) or complex JavaScript operations. On incumbent low-code platforms, executing these modern data extraction pipelines leads to exponential cost inflation and system instability. Platform arbitrage via Latenode restructures these underlying operational economics by shifting from per-step task penalties to raw CPU-second runtime metering, creating an overwhelming competitive advantage for enterprise automation architects and agency operators.
+
+Legacy Infrastructure Bottlenecks
+Legacy middleware infrastructure introduces severe architectural friction and artificial cost inflation when executing dynamic, high-frequency web scraping pipelines:
+* Task-Based Billing Penalties: Legacy platforms such as Zapier bill per individual module action or task. A multi-step data pipeline executing tens of thousands of monthly runs rapidly escalates software costs to $800.00+ per month without delivering proportional business value. For instance, processing 100,000 workflow executions on Zapier costs upwards of $733.00.
+* Custom Code & Execution Surcharges: Platforms like Make.com offer lower entry tiers but suffer from execution defects when handling dynamic complex JSON arrays. Furthermore, Make imposes direct financial surcharges on custom code execution (2 credits per CPU-second for custom JavaScript execution).
+* Third-Party Scraper Dependencies: Legacy platforms lack native headless browser engines, requiring external scraping API subscriptions (e.g., Apify, PhantomBuster).
+* DevOps & Maintenance Overhead: Self-hosted open-source platforms (e.g., n8n) avoid per-task fees but require continuous server maintenance.
+
+The Latenode Arbitrage Advantage
+Latenode fundamentally changes cloud automation economics by billing exclusively on actual CPU-second execution time rather than arbitrary per-node task triggers. Under this architecture, a complex web scraping and data parsing pipeline running 100,000 executions—which costs $733.00+ on Zapier or $146.00 on Make.com—operates for approximately $10.80 on Latenode. Furthermore, Latenode integrates a full-featured Node.js execution environment with unrestricted access to over 1 million NPM packages without custom code surcharges, a native queryable database, built-in Retrieval-Augmented Generation (RAG) vector storage, and an integrated Puppeteer headless browser node.
+
+2. Technical Architecture & End-to-End Workflow Pipeline for Template #1
+
+Core Technical Stack Specifications:
+* Built-in Puppeteer Browser Node: Executes headless Chromium navigation directly inside the workflow pipeline, bypassing client-side JavaScript rendering on SPAs and passing automated anti-bot/Cloudflare challenge delays without external API costs.
+* Native JavaScript Code Node: Ingests raw HTML/DOM payloads extracted by Puppeteer. Standard programmatic logic executes string extraction, regex operations to strip non-numeric currency characters, parseFloat() type coercion for price normalization, and fallback logic for selector mutation handling.
+* Built-in Queryable Database: Provides structured, persistent state storage for tracking price histories, inventory availability states, and promotional tags. System logic executes SQL-like query operations to match incoming scraped payloads against historical SKU records, evaluating dynamic percentage price deltas: Price Delta % = ((Price_Current - Price_Historical) / Price_Historical) * 100.
+* Alerting & Event Dispatcher: Evaluates computed delta percentages against customizable alert thresholds. When price anomalies breach defined variance levels, dispatches instantaneous webhook alerts to Slack channels or SMTP email broadcasts.
+
+Five Modular Scenario Containers:
+- Container 1: Trigger Ingestion Container (Scheduled cron execution block or inbound Webhook POST).
+- Container 2: Headless Scraping & Navigation Container (Puppeteer initializes headless browser, navigates to target URL, waits for selector, extracts dynamic HTML DOM).
+- Container 3: Payload Parsing & Validation Container (Native JavaScript node strips currency characters, coerces numeric fields via parseFloat(), normalizes JSON product state object).
+- Container 4: Database State Mapping & Comparison Container (Queries Latenode queryable database for historical SKU match, computes price variance percentage, updates timestamped state log).
+- Container 5: Notification & Error Catching Container (Evaluates anomaly trigger flags, formats rich Slack webhooks, intercepts upstream exceptions).
+
+3. Target Audience, Pain Point Resolution & Competitive Matrix
+Targeting mid-market e-commerce brands, retail pricing managers, and agency automation consultants. Replaces recurring $100+/mo scraping fees with high-reliability Latenode CPU metering and internal database logging.
+
+4. Commercial Monetization Framework
+1. One-Time Digital Template Sale: $499.00 license purchase delivering modular Latenode scenario JSON, setup guides, and NPM script assets.
+2. Implementation & Setup Package: Fixed $450.00 done-for-you service (3 hours @ $150/hr).
+3. Monthly Maintenance Retainer: System monitoring, selector updates, and script optimization at $199.00/month.
+4. Latenode Affiliate Revenue: 20%-30% recurring payout ($10.00 - $15.00/month per active client).
+
+5. Deployment Roadmap & Retainer Retention Strategy
+Automated monthly ROI reporting scenario computing runtime CPU savings versus Zapier ($10.80 vs $733.00+) to keep monthly retainer churn below 5%.`
+  },
   {
     id: 'report-lead-enricher',
     title: 'Omnichannel B2B AI Lead Enrichment & Auto-Router',
@@ -68,6 +121,34 @@ Required Flow:
 4. Database Knowledge Search: Query company FAQ database or Notion page for matching answers.
 5. Zendesk/HelpDesk API Update: Tag ticket, assign priority, and insert private draft note with AI solution.
 6. Emergency Churn Alert: If sentiment is Angry/Disappointed and customer is high-tier, dispatch urgent SMS / Slack alert to account manager.`
+  },
+  {
+    id: 'report-bioscience-pipeline',
+    title: 'NCBI PubMed, UniProt & AlphaFold Bio-Research Pipeline',
+    category: 'Bioscience, Genomics & Drug Discovery',
+    estimatedValue: '$129 / sale',
+    description:
+      'Biomedical literature surveillance & therapeutic protein structural screening. Ingests literature via NCBI Entrez E-utilities, resolves UniProtKB protein targets, queries AlphaFold DB for 3D structure predictions & pLDDT confidence scores, evaluates ChEMBL drug-likeness rules, and alerts research teams.',
+    sampleRawReport: `# RESEARCH REPORT: Autonomous Biomedical Literature & AlphaFold Structural Screening Pipeline
+Target Platform: Latenode.com
+Vendor: BotVibe AI
+Domain: Bioscience, Bioinformatics & Drug Discovery (DeepMind Science Skills)
+Market Need: Biotech startups and academic pharmacology labs manually search PubMed and UniProt weekly to detect target literature and structural data. Automating literature ingestion, UniProt accession parsing, and AlphaFold DB 3D structure validation saves 15+ hours per research scientist each week.
+
+Required Flow (Using Google DeepMind Science Skills standards):
+1. Inbound Webhook / Schedule Trigger: Triggered weekly or on-demand with therapeutic target or gene symbol (e.g., TP53, EGFR, KRAS, BRAF).
+2. NCBI E-utilities PubMed Search (esearch.fcgi): Query PubMed for recent clinical and biochemical trials (retmax=10, retmode=json).
+3. UniProtKB Resolution: Query UniProt REST API (https://rest.uniprot.org/uniprotkb/) to resolve protein accession, canonical sequence, and active catalytic sites.
+4. AlphaFold DB Structural Verification: Fetch predicted 3D structure metadata (cifUrl, pdbUrl, paeDocUrl) and compute mean pLDDT confidence score from https://alphafold.ebi.ac.uk/api/prediction/{accession}.
+5. ChEMBL Drug-Likeness & Bioactivity Node: Query ChEMBL API for known bioactive ligands, IC50 values, and evaluate Lipinski Rule-of-5 criteria.
+6. AI Synthesis & Therapeutic Dossier (Gemini 3.8 Flash): Synthesize structural findings, high-confidence rigid domains, and potential druggable pockets into an executive research dossier.
+7. Slack / Supabase Research Dispatch: Post structured summary block to biopharma Slack channel and write to Notion / Airtable database.
+8. Error Handling & NCBI Rate Limiting Branch: Respect 3 req/sec rate limit (or 10 req/sec with NCBI_API_KEY) and catch missing AlphaFold predictions gracefully.
+
+Monetization & Latenode Marketplace Positioning:
+- Target Price: $129 - $149 USD one-off purchase
+- Target Buyers: Computational biologists, Biotech founders, Academic labs, Pharma BD leads
+- Setup Time: Under 5 minutes (NCBI & Gemini keys optional/recommended)`
   }
 ];
 
@@ -885,3 +966,8 @@ Click the **Settings (Gear Icon)** in the left sidebar -> **Variables**, and ent
     ]
   }
 };
+
+export const PREBUILT_TEMPLATES: BotVibeTemplatePackage[] = [
+  TEMPLATE_AUTONOMOUS_PRICE_SCRAPER,
+  INITIAL_TEMPLATE,
+];

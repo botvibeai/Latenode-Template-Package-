@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Webhook,
   Code2,
@@ -29,12 +29,26 @@ interface LatenodeCanvasProps {
 }
 
 export const LatenodeCanvas: React.FC<LatenodeCanvasProps> = ({ pkg, onSelectStep }) => {
-  const [selectedNode, setSelectedNode] = useState<LatenodeNode | null>(pkg.nodes[0] || null);
+  const safeNodes = Array.isArray(pkg?.nodes) ? pkg.nodes : [];
+  const safeConnections = Array.isArray(pkg?.connections) ? pkg.connections : [];
+
+  const [selectedNodeId, setSelectedNodeId] = useState<string>(safeNodes[0]?.id || '');
   const [activeTab, setActiveTab] = useState<'sticky' | 'code' | 'sample' | 'test'>('sticky');
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [zoom, setZoom] = useState(1);
   const [testOutput, setTestOutput] = useState<any | null>(null);
   const [isTesting, setIsTesting] = useState(false);
+
+  // Synchronize selected node when package changes
+  useEffect(() => {
+    if (safeNodes.length > 0) {
+      if (!selectedNodeId || !safeNodes.some(n => n.id === selectedNodeId)) {
+        setSelectedNodeId(safeNodes[0].id);
+      }
+    }
+  }, [pkg?.id, safeNodes, selectedNodeId]);
+
+  const selectedNode = safeNodes.find(n => n.id === selectedNodeId) || safeNodes[0] || null;
 
   const getNodeIcon = (type: string) => {
     switch (type) {
@@ -106,8 +120,12 @@ export const LatenodeCanvas: React.FC<LatenodeCanvasProps> = ({ pkg, onSelectSte
   };
 
   // Find canvas bounds
-  const maxX = Math.max(...pkg.nodes.map(n => n.position.x), 1600) + 380;
-  const maxY = Math.max(...pkg.nodes.map(n => n.position.y), 500) + 260;
+  const maxX = safeNodes.length > 0
+    ? Math.max(...safeNodes.map(n => n?.position?.x ?? 100), 1600) + 380
+    : 1800;
+  const maxY = safeNodes.length > 0
+    ? Math.max(...safeNodes.map(n => n?.position?.y ?? 200), 500) + 260
+    : 700;
 
   return (
     <div className="flex flex-col lg:flex-row h-[780px] bg-slate-950 border border-slate-800 rounded-xl overflow-hidden shadow-2xl relative">
@@ -119,7 +137,7 @@ export const LatenodeCanvas: React.FC<LatenodeCanvasProps> = ({ pkg, onSelectSte
         </span>
         <span className="text-slate-600">|</span>
         <span className="text-slate-300">
-          Nodes: <strong className="text-white font-mono">{pkg.nodes.length}</strong>
+          Nodes: <strong className="text-white font-mono">{safeNodes.length}</strong>
         </span>
         <span className="text-slate-600">|</span>
         <span className="text-emerald-400 font-medium">Sticky Notes Active (100% Documented)</span>
@@ -180,22 +198,23 @@ export const LatenodeCanvas: React.FC<LatenodeCanvasProps> = ({ pkg, onSelectSte
               </marker>
             </defs>
 
-            {pkg.connections.map(conn => {
-              const from = pkg.nodes.find(n => n.id === conn.fromNodeId);
-              const to = pkg.nodes.find(n => n.id === conn.toNodeId);
+            {safeConnections.map(conn => {
+              if (!conn) return null;
+              const from = safeNodes.find(n => n.id === conn.fromNodeId);
+              const to = safeNodes.find(n => n.id === conn.toNodeId);
               if (!from || !to) return null;
 
               const isError = conn.fromPort === 'error' || to.type === 'error_handler';
-              const x1 = from.position.x + 240;
-              const y1 = from.position.y + 44;
-              const x2 = to.position.x;
-              const y2 = to.position.y + 44;
+              const x1 = (from.position?.x ?? 100) + 240;
+              const y1 = (from.position?.y ?? 200) + 44;
+              const x2 = (to.position?.x ?? 300);
+              const y2 = (to.position?.y ?? 200) + 44;
 
               const dx = Math.abs(x2 - x1) * 0.5;
               const path = `M ${x1} ${y1} C ${x1 + dx} ${y1}, ${x2 - dx} ${y2}, ${x2} ${y2}`;
 
               return (
-                <g key={conn.id}>
+                <g key={conn.id || `${conn.fromNodeId}-${conn.toNodeId}`}>
                   <path
                     d={path}
                     fill="none"
@@ -217,35 +236,45 @@ export const LatenodeCanvas: React.FC<LatenodeCanvasProps> = ({ pkg, onSelectSte
           </svg>
 
           {/* Render Nodes + Sticky Notes */}
-          {pkg.nodes.map((node, index) => {
+          {safeNodes.map((node, index) => {
             const isSelected = selectedNode?.id === node.id;
+            const nodeX = node.position?.x ?? ((index * 290) + 100);
+            const nodeY = node.position?.y ?? 220;
+            const sticky = node.stickyNote || {
+              title: `STEP ${index + 1}: ${node.title || node.name}`,
+              instructions: 'Review step parameters and output contract.',
+              requiredCredentials: [],
+              color: 'blue'
+            };
+            const reqCreds = Array.isArray(sticky.requiredCredentials) ? sticky.requiredCredentials : [];
+
             return (
               <div
                 key={node.id}
                 className="absolute z-10 select-none"
-                style={{ left: `${node.position.x}px`, top: `${node.position.y}px` }}
+                style={{ left: `${nodeX}px`, top: `${nodeY}px` }}
               >
                 {/* 1. INSTRUCTIONAL STICKY NOTE (FLOATING ABOVE NODE) */}
                 <div
                   className={`w-[250px] mb-3 p-3 rounded-lg border text-xs shadow-lg backdrop-blur-md transition-all ${getStickyColor(
-                    node.stickyNote.color
+                    sticky.color
                   )} ${isSelected ? 'ring-2 ring-amber-400/80 scale-[1.02]' : 'opacity-90 hover:opacity-100'}`}
                 >
                   <div className="flex items-center justify-between font-bold tracking-tight pb-1.5 border-b border-white/10">
-                    <span className="truncate">{node.stickyNote.title}</span>
+                    <span className="truncate">{sticky.title}</span>
                     <span className="px-1.5 py-0.5 rounded text-[10px] bg-black/40 font-mono">
                       #{index + 1}
                     </span>
                   </div>
                   <p className="mt-2 text-[11px] leading-relaxed opacity-95">
-                    {node.stickyNote.instructions}
+                    {sticky.instructions}
                   </p>
                   <div className="mt-2.5 pt-2 border-t border-white/10 flex items-center justify-between text-[10px]">
-                    <span className="flex items-center gap-1 font-mono text-white/80">
-                      <Key className="w-3 h-3" />
-                      {node.stickyNote.requiredCredentials[0] || 'No Key Needed'}
+                    <span className="flex items-center gap-1 font-mono text-white/80 truncate max-w-[150px]">
+                      <Key className="w-3 h-3 shrink-0" />
+                      {reqCreds[0] || 'No Key Needed'}
                     </span>
-                    <span className="font-semibold underline cursor-pointer" onClick={() => setSelectedNode(node)}>
+                    <span className="font-semibold underline cursor-pointer" onClick={() => setSelectedNodeId(node.id)}>
                       View Specs
                     </span>
                   </div>
@@ -257,7 +286,7 @@ export const LatenodeCanvas: React.FC<LatenodeCanvasProps> = ({ pkg, onSelectSte
                 {/* 2. LATENODE FUNCTIONAL NODE CARD */}
                 <div
                   onClick={() => {
-                    setSelectedNode(node);
+                    setSelectedNodeId(node.id);
                     setTestOutput(null);
                   }}
                   className={`w-[250px] rounded-xl bg-slate-900/95 border transition-all cursor-pointer shadow-xl ${
@@ -298,13 +327,13 @@ export const LatenodeCanvas: React.FC<LatenodeCanvasProps> = ({ pkg, onSelectSte
 
                   {/* Ports / Pins */}
                   <div className="relative px-3 py-1 flex justify-between items-center text-[10px] text-slate-500 border-t border-slate-800/80">
-                    <div className="flex items-center gap-1.5">
-                      <span className="w-2.5 h-2.5 rounded-full bg-blue-500/80 border border-blue-300 inline-block" />
-                      <span>in</span>
+                    <div className="flex items-center gap-1">
+                      <div className="w-2 h-2 rounded-full bg-blue-500/80 -ml-4" />
+                      <span>Input ($node.in)</span>
                     </div>
-                    <div className="flex items-center gap-1.5">
-                      <span>out</span>
-                      <span className="w-2.5 h-2.5 rounded-full bg-emerald-500/80 border border-emerald-300 inline-block" />
+                    <div className="flex items-center gap-1">
+                      <span>Output</span>
+                      <div className="w-2 h-2 rounded-full bg-emerald-500/80 -mr-4" />
                     </div>
                   </div>
                 </div>
@@ -390,13 +419,13 @@ export const LatenodeCanvas: React.FC<LatenodeCanvasProps> = ({ pkg, onSelectSte
             <div className="flex-1 overflow-y-auto p-4 space-y-4 text-xs">
               {activeTab === 'sticky' && (
                 <div className="space-y-3.5">
-                  <div className={`p-3.5 rounded-lg border ${getStickyColor(selectedNode.stickyNote.color)}`}>
+                  <div className={`p-3.5 rounded-lg border ${getStickyColor(selectedNode?.stickyNote?.color || 'blue')}`}>
                     <div className="font-bold text-xs flex items-center gap-1.5 pb-1 mb-2 border-b border-white/10">
                       <Sparkles className="w-3.5 h-3.5" />
-                      {selectedNode.stickyNote.title}
+                      {selectedNode?.stickyNote?.title || selectedNode?.title || selectedNode?.name || 'Step Specification'}
                     </div>
                     <p className="text-xs leading-relaxed opacity-95">
-                      {selectedNode.stickyNote.instructions}
+                      {selectedNode?.stickyNote?.instructions || 'Standardized execution step.'}
                     </p>
                   </div>
 
@@ -405,9 +434,13 @@ export const LatenodeCanvas: React.FC<LatenodeCanvasProps> = ({ pkg, onSelectSte
                       Required Credentials for Buyer:
                     </span>
                     <ul className="list-disc list-inside text-slate-400 text-[11px] space-y-1 font-mono">
-                      {selectedNode.stickyNote.requiredCredentials.map((c, i) => (
-                        <li key={i}>{c}</li>
-                      ))}
+                      {Array.isArray(selectedNode?.stickyNote?.requiredCredentials) && selectedNode.stickyNote.requiredCredentials.length > 0 ? (
+                        selectedNode.stickyNote.requiredCredentials.map((c, i) => (
+                          <li key={i}>{c}</li>
+                        ))
+                      ) : (
+                        <li>No external authentication key required</li>
+                      )}
                     </ul>
                   </div>
 
@@ -416,7 +449,7 @@ export const LatenodeCanvas: React.FC<LatenodeCanvasProps> = ({ pkg, onSelectSte
                       Input Dependencies:
                     </span>
                     <p className="text-slate-400 font-mono text-[11px]">
-                      {selectedNode.stickyNote.inputSchemaNotes}
+                      {selectedNode?.stickyNote?.inputSchemaNotes || '$node.in parameters mapped from upstream'}
                     </p>
                   </div>
 
@@ -425,7 +458,7 @@ export const LatenodeCanvas: React.FC<LatenodeCanvasProps> = ({ pkg, onSelectSte
                       Output Contract:
                     </span>
                     <p className="text-slate-400 font-mono text-[11px]">
-                      {selectedNode.stickyNote.outputContract}
+                      {selectedNode?.stickyNote?.outputContract || '{ success: true }'}
                     </p>
                   </div>
 
@@ -434,7 +467,7 @@ export const LatenodeCanvas: React.FC<LatenodeCanvasProps> = ({ pkg, onSelectSte
                       Testing & Verification Rule:
                     </span>
                     <p className="text-slate-300 text-[11px]">
-                      {selectedNode.stickyNote.testRule}
+                      {selectedNode?.stickyNote?.testRule || 'Execute step simulation to verify output.'}
                     </p>
                   </div>
                 </div>

@@ -20,10 +20,14 @@ interface StandardizationAuditProps {
 }
 
 export const StandardizationAudit: React.FC<StandardizationAuditProps> = ({ pkg }) => {
-  const [testCases, setTestCases] = useState<QATestCase[]>(pkg.qaTestCases || []);
+  const [testCases, setTestCases] = useState<QATestCase[]>(pkg?.qaTestCases || []);
   const [isRunningAll, setIsRunningAll] = useState(false);
   const [activeTestLog, setActiveTestLog] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
+
+  const safeNodes = pkg?.nodes || [];
+  const safeVars = pkg?.globalVariables || [];
+  const setupMinutes = pkg?.marketplaceListing?.setupTimeMinutes ?? 7;
 
   // Golden Standards Verification Items
   const standardsAudit = [
@@ -31,36 +35,36 @@ export const StandardizationAudit: React.FC<StandardizationAuditProps> = ({ pkg 
       id: 'naming',
       name: 'Uniform Node Naming Standard (BV_[Category]_[Step]_[Action])',
       description: 'Every node strictly follows the BV_ prefix convention so buyers recognize the execution pipeline instantly.',
-      passed: pkg.nodes.every(n => n.name.startsWith('BV_')),
-      details: `${pkg.nodes.length} / ${pkg.nodes.length} nodes verified.`,
+      passed: safeNodes.length > 0 && safeNodes.every(n => n?.name && n.name.startsWith('BV_')),
+      details: `${safeNodes.length} / ${safeNodes.length} nodes verified.`,
     },
     {
       id: 'stickynotes',
       name: 'Instructional Sticky Notes on Canvas Above Nodes',
       description: 'Every node contains a visual sticky note detailing purpose, credentials, inputs, and verification rules.',
-      passed: pkg.nodes.every(n => Boolean(n.stickyNote?.title && n.stickyNote?.instructions)),
-      details: `${pkg.nodes.length} / ${pkg.nodes.length} sticky notes placed on canvas.`,
+      passed: safeNodes.length > 0 && safeNodes.every(n => Boolean(n?.stickyNote?.title && n?.stickyNote?.instructions)),
+      details: `${safeNodes.length} / ${safeNodes.length} sticky notes placed on canvas.`,
     },
     {
       id: 'security',
       name: 'Zero-Hardcoded Secrets & Clean Credential References',
       description: 'No passwords or private tokens hardcoded inside scripts or configs; all stored via {{env.*}}.',
       passed: true,
-      details: `${pkg.globalVariables.length} global variables configured cleanly.`,
+      details: `${safeVars.length} global variables configured cleanly.`,
     },
     {
       id: 'errorhandling',
       name: 'Universal Error Handling & Graceful Fallback Branch',
       description: 'Scenario includes a dedicated Error Handler node to prevent pipeline crashes and alert administrator.',
-      passed: pkg.nodes.some(n => n.type === 'error_handler'),
+      passed: safeNodes.some(n => n?.type === 'error_handler'),
       details: 'Error Handler node configured with red fallback routing.',
     },
     {
       id: 'buyerOnboarding',
       name: 'Standardized Buyer Onboarding Time (<7 Minutes)',
       description: 'Buyer setup is restricted to: 1. Enter Keys -> 2. Connect Trigger -> 3. Test -> 4. Live.',
-      passed: pkg.marketplaceListing.setupTimeMinutes <= 10,
-      details: `Setup estimate: ~${pkg.marketplaceListing.setupTimeMinutes} minutes.`,
+      passed: setupMinutes <= 10,
+      details: `Setup estimate: ~${setupMinutes} minutes.`,
     },
     {
       id: 'gridAlignment',

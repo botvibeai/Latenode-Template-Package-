@@ -19,19 +19,27 @@ import {
   Boxes,
   Zap,
   CheckCircle2,
-  Cpu
+  Cpu,
+  ChevronDown,
+  Check
 } from 'lucide-react';
 import { BotVibeTemplatePackage } from './types';
-import { INITIAL_TEMPLATE, SAMPLE_RESEARCH_REPORTS } from './data/sampleTemplates';
+import { INITIAL_TEMPLATE, SAMPLE_RESEARCH_REPORTS, TEMPLATE_AUTONOMOUS_PRICE_SCRAPER, PREBUILT_TEMPLATES } from './data/sampleTemplates';
 import { LatenodeCanvas } from './components/LatenodeCanvas';
 import { StepByStepBuilder } from './components/StepByStepBuilder';
 import { ResearchStudio } from './components/ResearchStudio';
 import { StandardizationAudit } from './components/StandardizationAudit';
 import { MarketplacePackage } from './components/MarketplacePackage';
 import { generateSubmissionZip, downloadBlob } from './utils/packageExporter';
+import { ErrorBoundary } from './components/ErrorBoundary';
+import { sanitizeTemplatePackage } from './utils/sanitizePackage';
 
 export default function App() {
-  const [currentPackage, setCurrentPackage] = useState<BotVibeTemplatePackage>(INITIAL_TEMPLATE);
+  const [currentPackage, setCurrentPackage] = useState<BotVibeTemplatePackage>(() =>
+    sanitizeTemplatePackage(TEMPLATE_AUTONOMOUS_PRICE_SCRAPER)
+  );
+  const [availableTemplates, setAvailableTemplates] = useState<BotVibeTemplatePackage[]>(PREBUILT_TEMPLATES);
+  const [isTemplateMenuOpen, setIsTemplateMenuOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<'canvas' | 'steps' | 'research' | 'qa' | 'package'>('canvas');
   const [isZipping, setIsZipping] = useState(false);
 
@@ -44,15 +52,43 @@ export default function App() {
   }, [currentPackage?.templateName]);
 
   const handleQuickDownloadZip = async () => {
+    if (!currentPackage) return;
     setIsZipping(true);
     try {
       const blob = await generateSubmissionZip(currentPackage);
-      downloadBlob(blob, `${currentPackage.slug}-latenode-submission-package.zip`);
+      downloadBlob(blob, `${currentPackage.slug || 'template'}-latenode-submission-package.zip`);
     } catch (e) {
       console.error(e);
     } finally {
       setIsZipping(false);
     }
+  };
+
+  const handleBlueprintGenerated = (newPkg: BotVibeTemplatePackage) => {
+    try {
+      const safe = sanitizeTemplatePackage(newPkg);
+      setCurrentPackage(safe);
+      setAvailableTemplates(prev => {
+        const exists = prev.some(p => p.id === safe.id || p.templateName === safe.templateName);
+        if (!exists) return [safe, ...prev];
+        return prev.map(p => (p.id === safe.id ? safe : p));
+      });
+      setIsTemplateMenuOpen(false);
+      setActiveTab('canvas');
+    } catch (err) {
+      console.error('Error applying generated package:', err);
+    }
+  };
+
+  const handleSelectTemplate = (pkg: BotVibeTemplatePackage) => {
+    const safe = sanitizeTemplatePackage(pkg);
+    setCurrentPackage(safe);
+    setIsTemplateMenuOpen(false);
+  };
+
+  const handleResetToStandard = () => {
+    setCurrentPackage(sanitizeTemplatePackage(TEMPLATE_AUTONOMOUS_PRICE_SCRAPER));
+    setActiveTab('canvas');
   };
 
   return (
@@ -104,12 +140,96 @@ export default function App() {
 
           {/* Quick Active Template Indicator & Switcher */}
           <div className="flex items-center gap-3">
-            <div className="flex items-center gap-2 bg-slate-900 border border-slate-800 rounded-lg px-3 py-1.5 text-xs">
-              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-              <span className="text-slate-400 hidden sm:inline">Active Template:</span>
-              <span className="font-semibold text-amber-300 truncate max-w-[200px] sm:max-w-[260px]">
-                {currentPackage.templateName}
-              </span>
+            <div className="relative">
+              <button
+                type="button"
+                onClick={() => setIsTemplateMenuOpen(prev => !prev)}
+                className="flex items-center gap-2 bg-slate-900 hover:bg-slate-850 border border-slate-800 hover:border-amber-500/50 rounded-lg px-3 py-1.5 text-xs transition cursor-pointer shadow-sm group"
+                title="Click to switch between templates"
+              >
+                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse shrink-0" />
+                <span className="text-slate-400 hidden sm:inline">Active Template:</span>
+                <span className="font-semibold text-amber-300 group-hover:text-amber-200 truncate max-w-[170px] sm:max-w-[240px]">
+                  {currentPackage.templateName}
+                </span>
+                <ChevronDown className={`w-3.5 h-3.5 text-slate-400 transition-transform ${isTemplateMenuOpen ? 'rotate-180' : ''}`} />
+              </button>
+
+              {/* Template Switcher Dropdown Menu */}
+              {isTemplateMenuOpen && (
+                <>
+                  <div
+                    className="fixed inset-0 z-40"
+                    onClick={() => setIsTemplateMenuOpen(false)}
+                  />
+                  <div className="absolute right-0 sm:left-0 mt-2 w-80 sm:w-96 bg-slate-900 border border-slate-700/80 rounded-xl shadow-2xl p-2 z-50 space-y-1 backdrop-blur-xl">
+                    <div className="px-3 py-2 border-b border-slate-800 flex items-center justify-between">
+                      <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-amber-400">
+                        Select Standard Template
+                      </span>
+                      <span className="text-[10px] text-slate-500 font-mono">
+                        {availableTemplates.length} Available
+                      </span>
+                    </div>
+
+                    <div className="max-h-72 overflow-y-auto space-y-1 custom-scrollbar pt-1">
+                      {availableTemplates.map((tmpl) => {
+                        const isCurrent = tmpl.id === currentPackage.id || tmpl.templateName === currentPackage.templateName;
+                        return (
+                          <button
+                            key={tmpl.id}
+                            type="button"
+                            onClick={() => handleSelectTemplate(tmpl)}
+                            className={`w-full text-left p-2.5 rounded-lg text-xs transition flex items-start justify-between gap-2.5 ${
+                              isCurrent
+                                ? 'bg-amber-950/40 border border-amber-500/50 text-white'
+                                : 'hover:bg-slate-800/80 text-slate-300 border border-transparent'
+                            }`}
+                          >
+                            <div className="space-y-0.5">
+                              <div className="font-semibold flex items-center gap-1.5">
+                                <span className="truncate max-w-[210px] sm:max-w-[260px]">
+                                  {tmpl.templateName}
+                                </span>
+                              </div>
+                              <div className="flex items-center gap-2 text-[10px] text-slate-400 font-mono">
+                                <span>{tmpl.marketplaceListing?.category || 'General Automation'}</span>
+                                <span>•</span>
+                                <span className="text-emerald-400 font-bold">${tmpl.marketplaceListing?.recommendedPriceUSD ?? 499} USD</span>
+                              </div>
+                            </div>
+                            {isCurrent && (
+                              <Check className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
+                            )}
+                          </button>
+                        );
+                      })}
+                    </div>
+
+                    <div className="pt-2 border-t border-slate-800 flex items-center justify-between px-2 text-[11px]">
+                      <button
+                        onClick={() => {
+                          setIsTemplateMenuOpen(false);
+                          setActiveTab('research');
+                        }}
+                        className="text-amber-400 hover:text-amber-300 font-medium flex items-center gap-1"
+                      >
+                        <Sparkles className="w-3 h-3" />
+                        Create New From Report...
+                      </button>
+                      <button
+                        onClick={() => {
+                          handleResetToStandard();
+                          setIsTemplateMenuOpen(false);
+                        }}
+                        className="text-slate-500 hover:text-slate-300 text-[10px]"
+                      >
+                        Reset Default
+                      </button>
+                    </div>
+                  </div>
+                </>
+              )}
             </div>
 
             {/* Actions: Download Complete Package */}
@@ -204,57 +324,59 @@ export default function App() {
         </div>
       </header>
 
-      {/* Main Workspace Area */}
+      {/* Main Workspace Area with Crash Protection */}
       <main className="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 space-y-6">
-        {activeTab === 'canvas' && (
-          <div className="space-y-4">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-              <div>
-                <h2 className="text-lg font-bold text-white flex items-center gap-2">
-                  <span>Latenode.com Visual Architecture</span>
-                  <span className="text-xs px-2 py-0.5 rounded bg-slate-800 text-amber-400 font-mono font-normal">
-                    {currentPackage.templateName}
-                  </span>
-                </h2>
-                <p className="text-xs text-slate-400">
-                  Standardized BotVibe layout with color-coded Sticky Notes above every functional node.
-                  Click any node to inspect logic, parameters, code, and execute live tests.
-                </p>
+        <ErrorBoundary fallbackTitle="Template Architecture Safety Shield" onReset={handleResetToStandard}>
+          {activeTab === 'canvas' && (
+            <div className="space-y-4">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                <div>
+                  <h2 className="text-lg font-bold text-white flex items-center gap-2">
+                    <span>Latenode.com Visual Architecture</span>
+                    <span className="text-xs px-2 py-0.5 rounded bg-slate-800 text-amber-400 font-mono font-normal">
+                      {currentPackage?.templateName || 'Active Template'}
+                    </span>
+                  </h2>
+                  <p className="text-xs text-slate-400">
+                    Standardized BotVibe layout with color-coded Sticky Notes above every functional node.
+                    Click any node to inspect logic, parameters, code, and execute live tests.
+                  </p>
+                </div>
+                <button
+                  onClick={() => setActiveTab('steps')}
+                  className="self-start sm:self-auto text-xs text-amber-400 hover:text-amber-300 font-semibold flex items-center gap-1"
+                >
+                  View Sequential Build Steps <ChevronRight className="w-3.5 h-3.5" />
+                </button>
               </div>
-              <button
-                onClick={() => setActiveTab('steps')}
-                className="self-start sm:self-auto text-xs text-amber-400 hover:text-amber-300 font-semibold flex items-center gap-1"
-              >
-                View Sequential Build Steps <ChevronRight className="w-3.5 h-3.5" />
-              </button>
+
+              <LatenodeCanvas pkg={currentPackage} onSelectStep={() => setActiveTab('steps')} />
             </div>
+          )}
 
-            <LatenodeCanvas pkg={currentPackage} onSelectStep={() => setActiveTab('steps')} />
-          </div>
-        )}
+          {activeTab === 'steps' && (
+            <StepByStepBuilder
+              pkg={currentPackage}
+              onUpdatePackage={pkg => setCurrentPackage(sanitizeTemplatePackage(pkg))}
+            />
+          )}
 
-        {activeTab === 'steps' && (
-          <StepByStepBuilder pkg={currentPackage} />
-        )}
+          {activeTab === 'research' && (
+            <ResearchStudio
+              currentPackage={currentPackage}
+              onBlueprintGenerated={handleBlueprintGenerated}
+              onNavigateToCanvas={() => setActiveTab('canvas')}
+            />
+          )}
 
-        {activeTab === 'research' && (
-          <ResearchStudio
-            currentPackage={currentPackage}
-            onBlueprintGenerated={newPkg => {
-              setCurrentPackage(newPkg);
-              setActiveTab('canvas');
-            }}
-            onNavigateToCanvas={() => setActiveTab('canvas')}
-          />
-        )}
+          {activeTab === 'qa' && (
+            <StandardizationAudit pkg={currentPackage} />
+          )}
 
-        {activeTab === 'qa' && (
-          <StandardizationAudit pkg={currentPackage} />
-        )}
-
-        {activeTab === 'package' && (
-          <MarketplacePackage pkg={currentPackage} />
-        )}
+          {activeTab === 'package' && (
+            <MarketplacePackage pkg={currentPackage} />
+          )}
+        </ErrorBoundary>
       </main>
 
       {/* Bottom Footer */}

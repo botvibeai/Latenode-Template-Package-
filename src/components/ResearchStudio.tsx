@@ -22,7 +22,8 @@ import {
   Plus
 } from 'lucide-react';
 import { BotVibeTemplatePackage, SearchGroundingResult } from '../types';
-import { SAMPLE_RESEARCH_REPORTS } from '../data/sampleTemplates';
+import { SAMPLE_RESEARCH_REPORTS, TEMPLATE_AUTONOMOUS_PRICE_SCRAPER, INITIAL_TEMPLATE } from '../data/sampleTemplates';
+import { sanitizeTemplatePackage } from '../utils/sanitizePackage';
 
 interface ResearchStudioProps {
   currentPackage: BotVibeTemplatePackage;
@@ -234,7 +235,8 @@ export const ResearchStudio: React.FC<ResearchStudioProps> = ({
       }
 
       const generatedPackage: BotVibeTemplatePackage = await res.json();
-      onBlueprintGenerated(generatedPackage);
+      const safePackage = sanitizeTemplatePackage(generatedPackage);
+      onBlueprintGenerated(safePackage);
     } catch (err: any) {
       console.error(err);
       setErrorMessage(err.message || 'Error communicating with AI backend.');
@@ -370,7 +372,7 @@ export const ResearchStudio: React.FC<ResearchStudioProps> = ({
               <span className="text-slate-500 font-mono">Suggested Searches:</span>
               {[
                 'Latenode top trending templates and marketplace prices 2025 2026',
-                'Latenode headless browser puppeteer scraping best practices',
+                'PubMed E-utilities and AlphaFold DB protein structure REST API automation',
                 'B2B AI lead enrichment Make vs Latenode vs Zapier workflow nodes',
                 'Stripe customer subscription billing webhook error recovery',
               ].map((query, idx) => (
@@ -474,10 +476,12 @@ export const ResearchStudio: React.FC<ResearchStudioProps> = ({
             <BookOpen className="w-4 h-4 text-amber-400" />
             Select a Preset Research Report or Paste Custom Below:
           </span>
-          <span className="text-xs text-slate-500 font-mono">3 Production Blueprints Ready</span>
+          <span className="text-xs text-slate-500 font-mono">
+            {SAMPLE_RESEARCH_REPORTS.length} Production Blueprints Ready
+          </span>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {SAMPLE_RESEARCH_REPORTS.map(sample => {
             const isSelected = selectedReportId === sample.id;
             return (
@@ -491,12 +495,12 @@ export const ResearchStudio: React.FC<ResearchStudioProps> = ({
                 }`}
               >
                 <div className="flex items-center justify-between text-xs mb-2">
-                  <span className="font-mono text-[11px] text-amber-400 bg-amber-950/60 px-2 py-0.5 rounded border border-amber-900/40">
+                  <span className="font-mono text-[11px] text-amber-400 bg-amber-950/60 px-2 py-0.5 rounded border border-amber-900/40 truncate max-w-[140px]">
                     {sample.category}
                   </span>
                   <span className="font-bold text-emerald-400 font-mono text-xs">{sample.estimatedValue}</span>
                 </div>
-                <h3 className="text-sm font-semibold text-white mb-1.5">{sample.title}</h3>
+                <h3 className="text-sm font-semibold text-white mb-1.5 line-clamp-1">{sample.title}</h3>
                 <p className="text-xs text-slate-400 line-clamp-3 leading-relaxed">{sample.description}</p>
               </div>
             );

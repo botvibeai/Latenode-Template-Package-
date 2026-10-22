@@ -116,6 +116,24 @@ export interface AIProviderStatus {
   };
 }
 
+export interface TemplateVersionSnapshot {
+  id: string;
+  versionNumber: string;
+  label: string;
+  description?: string;
+  createdAt: string;
+  author: string;
+  packageSnapshot: BotVibeTemplatePackage;
+  stats: {
+    nodeCount: number;
+    stepCount: number;
+    testCount: number;
+    priceUSD: number;
+  };
+  changeSummary?: string[];
+  isAutoSaved?: boolean;
+}
+
 export interface BotVibeTemplatePackage {
   id: string;
   templateName: string;
@@ -149,4 +167,15 @@ export interface BotVibeTemplatePackage {
   marketplaceListing: MarketplaceListing;
   buyerSetupGuideMarkdown: string;
   latenodeScenarioJson: Record<string, any>;
+  versionHistory?: TemplateVersionSnapshot[];
+}
+
+export interface BuildStepsAutoSaveState {
+  timestamp: string;
+  savedAtFormatted: string;
+  pkg: BotVibeTemplatePackage;
+  currentStepIdx: number;
+  stepVerificationStatus: Record<number, boolean>;
+  activeVersionTag: string;
+  autoSavedCount?: number;
 }
